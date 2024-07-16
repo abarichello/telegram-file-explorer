@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
+	"os"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -12,7 +14,9 @@ import (
 )
 
 var (
-	adminID string
+	adminID        string
+	rootDirectory  string
+	defaultRootDir = "./testfiles/"
 )
 
 func loadEnvs() {
@@ -55,4 +59,12 @@ func checkForAdminStatus(message telego.Message) bool {
 	}
 	slog.Info("Authorized request")
 	return true
+}
+
+func listFiles(path string) []os.DirEntry {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		slog.Error(fmt.Sprintf("Error listing path: %s, err: %s", path, err.Error()))
+	}
+	return entries
 }
