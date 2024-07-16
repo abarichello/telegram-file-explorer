@@ -34,15 +34,13 @@ func TestIsUserAdmin(t *testing.T) {
 	}
 	for _, test := range testcases {
 		t.Run(test.name, func(t *testing.T) {
-			update := telego.Update{
-				Message: &telego.Message{
-					From: &telego.User{
-						ID: test.id,
-					},
+			message := &telego.Message{
+				From: &telego.User{
+					ID: test.id,
 				},
 			}
 
-			result := isUserAdmin(update)
+			result := isUserAdmin(*message)
 			assert.Equal(t, test.expected, result)
 		})
 	}

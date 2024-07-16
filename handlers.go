@@ -10,21 +10,68 @@ import (
 	tutil "github.com/mymmrac/telego/telegoutil"
 )
 
-func registerHandlers(botHandler *thandler.BotHandler) {
-	botHandler.Handle(start)
+func setMyCommands() {
+	bot.SetMyCommands(&telego.SetMyCommandsParams{
+		Commands: []telego.BotCommand{
+			{Command: "start", Description: "Starts the bot"},
+			{Command: "list", Description: "Lists root directory"},
+			{Command: "help", Description: "Shows how to use"},
+		},
+	})
 }
 
-func start(bot *telego.Bot, update telego.Update) {
-	if !checkForAdminStatus(update) {
+func registerHandlers() {
+	botHandler.HandleMessage(start, thandler.CommandEqual("start"))
+	botHandler.HandleMessage(list, thandler.CommandEqual("list"))
+	botHandler.HandleMessage(unknown)
+}
+
+func start(bot *telego.Bot, message telego.Message) {
+	if !checkForAdminStatus(message) {
 		return
 	}
 
 	msg := tutil.Message(
-		tutil.ID(update.Message.Chat.ID),
-		fmt.Sprintf("Oi %d", update.Message.From.ID),
+		tutil.ID(message.Chat.ID),
+		fmt.Sprintf("Oi %d", message.From.ID),
 	)
 	_, err := bot.SendMessage(msg)
 	if err != nil {
 		slog.Error(err.Error())
 	}
+}
+
+func list(bot *telego.Bot, message telego.Message) {
+	directory := rootDirectory
+	if admin := isUserAdmin(message); !admin {
+		directory = defaultRootDir
+	}
+
+	inlineKeyboard := tutil.InlineKeyboard(
+		tutil.InlineKeyboardRow( // Row 1
+			tutil.InlineKeyboardButton("Callback data button 1"). // Column 1
+										WithCallbackData("callback_1"),
+			tutil.InlineKeyboardButton("Callback data button 2"). // Column 2
+										WithCallbackData("callback_2"),
+		),
+		tutil.InlineKeyboardRow( // Row 2
+			tutil.InlineKeyboardButton("URL button").WithURL("https://example.com"), // Column 1
+		),
+	)
+
+	reply := tutil.Message(
+		tutil.ID(message.From.ID),
+		"Directory: "+directory,
+	).WithReplyMarkup(inlineKeyboard)
+	_, err := bot.SendMessage(reply)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+}
+
+func unknown(bot *telego.Bot, message telego.Message) {
+	bot.SendMessage(tutil.Message(
+		tutil.ID(message.Chat.ID),
+		"Unknown command, use /start",
+	))
 }

@@ -1,22 +1,50 @@
 package main
 
 import (
+	"log"
 	"log/slog"
 	"strconv"
 
+	"github.com/joho/godotenv"
 	"github.com/mymmrac/telego"
 
 	tutil "github.com/mymmrac/telego/telegoutil"
 )
 
-func isUserAdmin(update telego.Update) bool {
-	return strconv.FormatInt(update.Message.From.ID, 10) == adminID
+var (
+	adminID string
+)
+
+func loadEnvs() {
+	envMap, err := godotenv.Read()
+	if err != nil {
+		log.Fatal("Env loading error: ", err)
+	}
+
+	envID, ok := envMap["ADMIN_ID"]
+	if !ok {
+		slog.Error("No ADMIN_ID environment found")
+	}
+	adminID = envID
+
+	envRoot, ok := envMap["DIRECTORY_ROOT"]
+	if !ok {
+		slog.Info("No DIRECTORY_ROOT environment found, using test dir as default")
+		rootDirectory = defaultRootDir
+	} else {
+		rootDirectory = envRoot
+	}
 }
 
-func checkForAdminStatus(update telego.Update) bool {
-	if !isUserAdmin(update) {
+func isUserAdmin(message telego.Message) bool {
+	return strconv.FormatInt(message.From.ID, 10) == adminID
+}
+
+func checkForAdminStatus(message telego.Message) bool {
+	if !isUserAdmin(message) {
+		slog.Info("Unauthorized request")
 		msg := tutil.Message(
-			tutil.ID(update.Message.Chat.ID),
+			tutil.ID(message.Chat.ID),
 			"User unauthorized",
 		)
 		_, err := bot.SendMessage(msg)

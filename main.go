@@ -14,10 +14,9 @@ import (
 )
 
 var (
-	logger = slog.New(tint.NewHandler(os.Stderr, nil))
-	bot    *telego.Bot
-
-	adminID string
+	logger     = slog.New(tint.NewHandler(os.Stderr, nil))
+	bot        *telego.Bot
+	botHandler *thandler.BotHandler
 )
 
 func setup() {
@@ -40,11 +39,7 @@ func setup() {
 	}
 	bot = b
 
-	envID, ok := envMap["ADMIN_ID"]
-	if !ok {
-		slog.Error("No ADMIN_ID environment found")
-	}
-	adminID = envID
+	loadEnvs()
 }
 
 func main() {
@@ -57,12 +52,14 @@ func main() {
 	}
 	defer bot.StopLongPolling()
 
-	botHandler, err := thandler.NewBotHandler(bot, updates)
+	bh, err := thandler.NewBotHandler(bot, updates)
 	if err != nil {
 		slog.Error(err.Error())
 	}
+	botHandler = bh
 	defer botHandler.Stop()
 
-	registerHandlers(botHandler)
+	setMyCommands()
+	registerHandlers()
 	botHandler.Start()
 }
