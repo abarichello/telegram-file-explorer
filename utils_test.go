@@ -19,7 +19,6 @@ func TestIsUserAdmin(t *testing.T) {
 		id       int64
 		expected bool
 	}
-
 	testcases := []testCases{
 		{
 			name:     "is admin",
@@ -69,5 +68,52 @@ func TestListFiles(t *testing.T) {
 
 		assert.Equal(t, entries[3].Name(), "nested2")
 		assert.True(t, entries[3].IsDir())
+	})
+}
+
+func TestExtensionToEmoji(t *testing.T) {
+	t.Run("return "+TEXT_EMOJI, func(t *testing.T) {
+		extensions := []string{".txt", ".csv"}
+		for _, e := range extensions {
+			t.Run("Extension "+e+" should return "+TEXT_EMOJI, func(t *testing.T) {
+				assert.Equal(t, TEXT_EMOJI, extensionToEmoji(e))
+			})
+		}
+	})
+
+	t.Run("return "+PICTURE_EMOJI, func(t *testing.T) {
+		extensions := []string{".jpg", ".jpeg", ".png"}
+		for _, e := range extensions {
+			t.Run("Extension "+e+" should return "+PICTURE_EMOJI, func(t *testing.T) {
+				assert.Equal(t, PICTURE_EMOJI, extensionToEmoji(e))
+			})
+		}
+	})
+
+	t.Run("return "+VIDEO_EMOJI, func(t *testing.T) {
+		extensions := []string{".mp4", ".mpeg", ".webm"}
+		for _, e := range extensions {
+			t.Run("Extension "+e+" should return "+VIDEO_EMOJI, func(t *testing.T) {
+				assert.Equal(t, VIDEO_EMOJI, extensionToEmoji(e))
+			})
+		}
+	})
+
+	t.Run("return "+AUDIO_EMOJI, func(t *testing.T) {
+		extensions := []string{".ogg", ".mp3", ".aac"}
+		for _, e := range extensions {
+			t.Run("Extension "+e+" should return "+AUDIO_EMOJI, func(t *testing.T) {
+				assert.Equal(t, AUDIO_EMOJI, extensionToEmoji(e))
+			})
+		}
+	})
+
+	t.Run("return "+CODE_EMOJI, func(t *testing.T) {
+		extensions := []string{".html", ".css", ".js"}
+		for _, e := range extensions {
+			t.Run("Extension "+e+" should return "+CODE_EMOJI, func(t *testing.T) {
+				assert.Equal(t, CODE_EMOJI, extensionToEmoji(e))
+			})
+		}
 	})
 }

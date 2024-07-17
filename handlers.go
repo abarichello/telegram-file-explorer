@@ -47,22 +47,28 @@ func list(bot *telego.Bot, message telego.Message) {
 		directory = defaultRootDir
 	}
 
-	inlineKeyboard := tutil.InlineKeyboard(
-		tutil.InlineKeyboardRow( // Row 1
-			tutil.InlineKeyboardButton("Callback data button 1"). // Column 1
-										WithCallbackData("callback_1"),
-			tutil.InlineKeyboardButton("Callback data button 2"). // Column 2
-										WithCallbackData("callback_2"),
-		),
-		tutil.InlineKeyboardRow( // Row 2
-			tutil.InlineKeyboardButton("URL button").WithURL("https://example.com"), // Column 1
-		),
-	)
+	var buttons []telego.InlineKeyboardButton
+	entries := listFiles(directory)
+	for _, entry := range entries {
+		fn := fileButton
+		suffix := ""
+		if entry.IsDir() {
+			fn = folderButton
+			suffix = "/"
+		}
+		newPath := directory + entry.Name() + suffix
+		buttons = append(buttons, fn(entry.Name(), newPath))
+	}
+
+	inlineKeyboard := makeInlineKeyboard(buttons)
+	text := "*Listing directory:* " + directory + "\n"
 
 	reply := tutil.Message(
 		tutil.ID(message.From.ID),
-		"Directory: "+directory,
-	).WithReplyMarkup(inlineKeyboard)
+		text,
+	).WithReplyMarkup(inlineKeyboard).
+		WithParseMode(telego.ModeMarkdownV2)
+
 	_, err := bot.SendMessage(reply)
 	if err != nil {
 		slog.Error(err.Error())

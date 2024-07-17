@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"mime"
 	"os"
+	"slices"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -16,7 +18,7 @@ import (
 var (
 	adminID        string
 	rootDirectory  string
-	defaultRootDir = "./testfiles/"
+	defaultRootDir = "testfiles/"
 )
 
 func loadEnvs() {
@@ -62,9 +64,52 @@ func checkForAdminStatus(message telego.Message) bool {
 }
 
 func listFiles(path string) []os.DirEntry {
+	// TODO: sort directories first
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Error listing path: %s, err: %s", path, err.Error()))
 	}
 	return entries
+}
+
+func extensionToEmoji(ext string) string {
+	mimeMap := map[string]string{
+		"text/plain": TEXT_EMOJI,
+		"text/csv":   TEXT_EMOJI,
+
+		"image/gif":     PICTURE_EMOJI,
+		"image/jpeg":    PICTURE_EMOJI,
+		"image/png":     PICTURE_EMOJI,
+		"image/svg+xml": PICTURE_EMOJI,
+
+		"video/mpeg": VIDEO_EMOJI,
+		"video/mp4":  VIDEO_EMOJI,
+		"video/webm": VIDEO_EMOJI,
+
+		"audio/aac":       AUDIO_EMOJI,
+		"audio/wav":       AUDIO_EMOJI,
+		"audio/wave":      AUDIO_EMOJI,
+		"audio/x-wav":     AUDIO_EMOJI,
+		"audio/x-pn-wav":  AUDIO_EMOJI,
+		"audio/ogg":       AUDIO_EMOJI,
+		"audio/mpeg":      AUDIO_EMOJI,
+		"application/ogg": AUDIO_EMOJI,
+
+		"text/css":        CODE_EMOJI,
+		"text/javascript": CODE_EMOJI,
+		"text/htm":        CODE_EMOJI,
+		"text/html":       CODE_EMOJI,
+	}
+
+	for k, v := range mimeMap {
+		mimeExtensions, err := mime.ExtensionsByType(k)
+		if err != nil {
+			slog.Error(err.Error())
+		}
+		if slices.Contains(mimeExtensions, ext) {
+			return v
+		}
+	}
+
+	return GENERIC_FILE_EMOJI
 }
