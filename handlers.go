@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
 
 	"github.com/mymmrac/telego"
 
@@ -48,6 +50,10 @@ func listCallback(bot *telego.Bot, callback telego.CallbackQuery) {
 	if callback.Data == "empty" {
 		bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{CallbackQueryID: callback.ID})
 		return
+	} else if filepath.Ext(callback.Data) != "" {
+		// contains extension, handle file instead of folders
+		fileCallback(bot, callback)
+		return
 	}
 
 	directory := callback.Data
@@ -83,6 +89,26 @@ func listCommand(bot *telego.Bot, message telego.Message) {
 		WithParseMode(telego.ModeMarkdownV2)
 
 	_, err := bot.SendMessage(reply)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+}
+
+func fileCallback(bot *telego.Bot, callback telego.CallbackQuery) {
+	sendID := tutil.ID(callback.From.ID)
+	defer bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{CallbackQueryID: callback.ID})
+
+	file, err := os.Open(callback.Data)
+	if err != nil {
+		slog.Error("Error loading file: " + callback.Data + "|err: " + err.Error())
+		bot.SendMessage(tutil.Message(sendID, "Error loading required file"))
+	}
+
+	document := tutil.Document(
+		sendID,
+		tutil.File(file),
+	)
+	_, err = bot.SendDocument(document)
 	if err != nil {
 		slog.Error(err.Error())
 	}

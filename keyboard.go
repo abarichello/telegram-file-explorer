@@ -49,12 +49,12 @@ func makeButtonsFromFileEntries(path string) []telego.InlineKeyboardButton {
 	entries := listFiles(path)
 	for _, entry := range entries {
 		fn := fileButton
-		suffix := ""
+		separator := ""
 		if entry.IsDir() {
 			fn = folderButton
-			suffix = "/"
+			separator = "/"
 		}
-		newPath := path + "/" + entry.Name() + suffix
+		newPath := path + separator + entry.Name() + separator
 		buttons = append(buttons, fn(entry.Name(), newPath))
 	}
 	return buttons
