@@ -21,12 +21,13 @@ func setMyCommands() {
 }
 
 func registerHandlers() {
-	botHandler.HandleMessage(start, thandler.CommandEqual("start"))
-	botHandler.HandleMessage(list, thandler.CommandEqual("list"))
+	botHandler.HandleMessage(startCommand, thandler.CommandEqual("start"))
+	botHandler.HandleMessage(listCommand, thandler.CommandEqual("list"))
+	botHandler.HandleCallbackQuery(listCallback, thandler.AnyCallbackQueryWithMessage())
 	botHandler.HandleMessage(unknown)
 }
 
-func start(bot *telego.Bot, message telego.Message) {
+func startCommand(bot *telego.Bot, message telego.Message) {
 	if !checkForAdminStatus(message) {
 		return
 	}
@@ -41,27 +42,39 @@ func start(bot *telego.Bot, message telego.Message) {
 	}
 }
 
-func list(bot *telego.Bot, message telego.Message) {
+func listCallback(bot *telego.Bot, callback telego.CallbackQuery) {
+	// ignore first inline keyboard button callback, we need to send data
+	// since pure text buttons with no callback are not allowed
+	if callback.Data == "empty" {
+		bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{CallbackQueryID: callback.ID})
+		return
+	}
+
+	directory := callback.Data
+	previousDirectory := getPreviousDirectory(directory)
+
+	buttons := makeButtonsFromFileEntries(directory)
+	buttons = prependNavigationButtons(buttons, directory, previousDirectory)
+	inlineKeyboard := makeInlineKeyboard(buttons)
+
+	bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{CallbackQueryID: callback.ID})
+	bot.EditMessageReplyMarkup(&telego.EditMessageReplyMarkupParams{
+		MessageID:   callback.Message.GetMessageID(),
+		ChatID:      tutil.ID(callback.Message.GetChat().ID),
+		ReplyMarkup: inlineKeyboard,
+	})
+}
+
+func listCommand(bot *telego.Bot, message telego.Message) {
 	directory := rootDirectory
 	if admin := isUserAdmin(message); !admin {
 		directory = defaultRootDir
 	}
 
-	var buttons []telego.InlineKeyboardButton
-	entries := listFiles(directory)
-	for _, entry := range entries {
-		fn := fileButton
-		suffix := ""
-		if entry.IsDir() {
-			fn = folderButton
-			suffix = "/"
-		}
-		newPath := directory + entry.Name() + suffix
-		buttons = append(buttons, fn(entry.Name(), newPath))
-	}
-
+	buttons := makeButtonsFromFileEntries(directory)
+	buttons = prependNavigationButtons(buttons, directory, directory)
 	inlineKeyboard := makeInlineKeyboard(buttons)
-	text := "*Listing directory:* " + directory + "\n"
+	text := "*Click buttons below to navigate through folders:*"
 
 	reply := tutil.Message(
 		tutil.ID(message.From.ID),

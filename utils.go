@@ -6,8 +6,10 @@ import (
 	"log/slog"
 	"mime"
 	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/mymmrac/telego"
@@ -18,7 +20,7 @@ import (
 var (
 	adminID        string
 	rootDirectory  string
-	defaultRootDir = "testfiles/"
+	defaultRootDir = "testfiles"
 )
 
 func loadEnvs() {
@@ -70,6 +72,16 @@ func listFiles(path string) []os.DirEntry {
 		slog.Error(fmt.Sprintf("Error listing path: %s, err: %s", path, err.Error()))
 	}
 	return entries
+}
+
+func getPreviousDirectory(path string) string {
+	if path == strings.TrimRight(rootDirectory, "/") {
+		return rootDirectory
+	}
+
+	normalizedPath := strings.TrimRight(path, "/")
+	previous := filepath.Dir(normalizedPath)
+	return previous
 }
 
 func extensionToEmoji(ext string) string {

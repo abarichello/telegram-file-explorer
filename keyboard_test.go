@@ -27,31 +27,32 @@ func TestMakeInlineKeyboard(t *testing.T) {
 		n            int
 		expectedGrid []int
 	}
+	// All cases should return the first line with two fixed buttons for navigation
 	testcases := []testCases{
 		{
 			name:         "return a line of maxColumns",
 			n:            maxColumns,
-			expectedGrid: []int{maxColumns},
+			expectedGrid: []int{2, maxColumns},
 		},
 		{
 			name:         "return a line of maxColumns and a second line with a lone button",
 			n:            maxColumns + 1,
-			expectedGrid: []int{maxColumns, 1},
+			expectedGrid: []int{2, maxColumns, 1},
 		},
 		{
 			name:         "return a line of maxColumns and a second line with two buttons",
 			n:            maxColumns + 2,
-			expectedGrid: []int{maxColumns, 2},
+			expectedGrid: []int{2, maxColumns, 2},
 		},
 		{
 			name:         "return two lines of maxColumns",
 			n:            2 * maxColumns,
-			expectedGrid: []int{maxColumns, maxColumns},
+			expectedGrid: []int{2, maxColumns, maxColumns},
 		},
 		{
 			name:         "return five lines of maxColumns and a sixth line with two buttons",
 			n:            5*maxColumns + 2,
-			expectedGrid: []int{maxColumns, maxColumns, maxColumns, maxColumns, maxColumns, 2},
+			expectedGrid: []int{2, maxColumns, maxColumns, maxColumns, maxColumns, maxColumns, 2},
 		},
 	}
 	for _, test := range testcases {

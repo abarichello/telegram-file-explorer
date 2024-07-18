@@ -71,6 +71,14 @@ func TestListFiles(t *testing.T) {
 	})
 }
 
+func TestGetPreviousDirectory(t *testing.T) {
+	t.Run("return proper previous directory", func(t *testing.T) {
+		assert.Equal(t, "testfiles", getPreviousDirectory("testfiles/image"))
+		assert.Equal(t, "testfiles", getPreviousDirectory("testfiles/image/"))
+		assert.Equal(t, "testfiles/image", getPreviousDirectory("testfiles/image/2"))
+	})
+}
+
 func TestExtensionToEmoji(t *testing.T) {
 	t.Run("return "+TEXT_EMOJI, func(t *testing.T) {
 		extensions := []string{".txt", ".csv"}
