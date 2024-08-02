@@ -50,11 +50,11 @@ func TestListFiles(t *testing.T) {
 
 	t.Run("root directory", func(t *testing.T) {
 		entries := listFiles(rootDirectory)
-		assert.Len(t, entries, 5)
+		assert.Len(t, entries, 6)
 	})
 
 	t.Run("folder with mixed items", func(t *testing.T) {
-		entries := listFiles(rootDirectory + "mixed")
+		entries := listFiles(rootDirectory + "/mixed")
 		assert.Len(t, entries, 4)
 
 		assert.Equal(t, entries[0].Name(), "666.txt")

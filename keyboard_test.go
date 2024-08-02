@@ -58,6 +58,7 @@ func TestMakeInlineKeyboard(t *testing.T) {
 	for _, test := range testcases {
 		t.Run(test.name, func(t *testing.T) {
 			buttons := makeRandomKeyboardButtons(test.n)
+			buttons = prependNavigationButtons(buttons, ".", ".")
 			result := makeInlineKeyboard(buttons)
 
 			for i := 0; i < len(test.expectedGrid); i++ {

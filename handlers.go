@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -15,33 +14,16 @@ import (
 func setMyCommands() {
 	bot.SetMyCommands(&telego.SetMyCommandsParams{
 		Commands: []telego.BotCommand{
-			{Command: "start", Description: "Starts the bot"},
-			{Command: "list", Description: "Lists root directory"},
+			{Command: "start", Description: "Starts the bot by listing the root directory"},
 			{Command: "help", Description: "Shows how to use"},
 		},
 	})
 }
 
 func registerHandlers() {
-	botHandler.HandleMessage(startCommand, thandler.CommandEqual("start"))
-	botHandler.HandleMessage(listCommand, thandler.CommandEqual("list"))
+	botHandler.HandleMessage(listCommand, thandler.CommandEqual("start"))
 	botHandler.HandleCallbackQuery(listCallback, thandler.AnyCallbackQueryWithMessage())
 	botHandler.HandleMessage(unknown)
-}
-
-func startCommand(bot *telego.Bot, message telego.Message) {
-	if !checkForAdminStatus(message) {
-		return
-	}
-
-	msg := tutil.Message(
-		tutil.ID(message.Chat.ID),
-		fmt.Sprintf("Oi %d", message.From.ID),
-	)
-	_, err := bot.SendMessage(msg)
-	if err != nil {
-		slog.Error(err.Error())
-	}
 }
 
 func listCallback(bot *telego.Bot, callback telego.CallbackQuery) {
