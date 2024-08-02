@@ -34,6 +34,8 @@ func listCallback(bot *telego.Bot, callback telego.CallbackQuery) {
 		return
 	} else if filepath.Ext(callback.Data) != "" {
 		// contains extension, handle file instead of folders
+		// TODO: make a more robust check, some files don't contain extensions
+		// TODO: double-check the callback received to prevent list env files or unauthorized ones
 		fileCallback(bot, callback)
 		return
 	}
@@ -62,7 +64,7 @@ func listCommand(bot *telego.Bot, message telego.Message) {
 	buttons := makeButtonsFromFileEntries(directory)
 	buttons = prependNavigationButtons(buttons, directory, directory)
 	inlineKeyboard := makeInlineKeyboard(buttons)
-	text := "*Click buttons below to navigate through folders:*"
+	text := "*Click on the buttons below to navigate through folders:*"
 
 	reply := tutil.Message(
 		tutil.ID(message.From.ID),
