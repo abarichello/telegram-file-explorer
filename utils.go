@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"mime"
 	"os"
@@ -11,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/joho/godotenv"
 	"github.com/mymmrac/telego"
 
 	tutil "github.com/mymmrac/telego/telegoutil"
@@ -19,24 +17,24 @@ import (
 
 var (
 	adminID        string
+	botToken       string
 	rootDirectory  string
 	defaultRootDir = "testfiles"
 )
 
 func loadEnvs() {
-	envMap, err := godotenv.Read()
-	if err != nil {
-		log.Fatal("Env loading error: ", err)
+	botToken = os.Getenv("BOT_TOKEN")
+	if botToken == "" {
+		slog.Error("No BOT_TOKEN env exported")
 	}
 
-	envID, ok := envMap["ADMIN_ID"]
-	if !ok {
+	adminID = os.Getenv("ADMIN_ID")
+	if adminID == "" {
 		slog.Error("No ADMIN_ID environment found")
 	}
-	adminID = envID
 
-	envRoot, ok := envMap["DIRECTORY_ROOT"]
-	if !ok {
+	envRoot := os.Getenv("DIRECTORY_ROOT")
+	if envRoot == "" {
 		slog.Info("No DIRECTORY_ROOT environment found, using test dir as default")
 		rootDirectory = defaultRootDir
 	} else {

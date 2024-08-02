@@ -1,15 +1,14 @@
 package main
 
 import (
-	"log"
 	"log/slog"
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 	"github.com/mymmrac/telego"
 
+	_ "github.com/joho/godotenv/autoload"
 	thandler "github.com/mymmrac/telego/telegohandler"
 )
 
@@ -20,26 +19,21 @@ var (
 )
 
 func setup() {
-	envMap, err := godotenv.Read()
-	if err != nil {
-		log.Fatal("Env loading error: ", err)
-	}
-
 	slog.SetDefault(slog.New(
 		tint.NewHandler(os.Stdout, &tint.Options{
 			Level:      slog.LevelDebug,
 			TimeFormat: time.Kitchen,
 		}),
 	))
-	slog.Info("Started bot")
 
-	b, err := telego.NewBot(envMap["BOT_TOKEN"], telego.WithDefaultDebugLogger())
+	loadEnvs()
+
+	b, err := telego.NewBot(botToken, telego.WithDefaultDebugLogger())
 	if err != nil {
 		slog.Error(err.Error())
 	}
 	bot = b
-
-	loadEnvs()
+	slog.Info("Started bot")
 }
 
 func main() {
