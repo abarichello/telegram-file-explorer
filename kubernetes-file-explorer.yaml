@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: file-explorer-bot-deployment
+  labels:
+    app: file-explorer-bot
+
+spec:
+  replicas: 1 # To increase replicas the bot needs to be updated to use webhooks intead
+  selector:
+    matchLabels:
+      app: file-explorer-bot
+  template:
+    metadata:
+      labels:
+        app: file-explorer-bot
+    spec:
+      containers:
+        - name: telegram-file-explorer-bot
+          image: telegram-file-explorer-bot
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 443
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: file-explorer-bot-service
+spec:
+  selector:
+    app: file-explorer-bot
+  ports:
+    - protocol: TCP
+      port: 443
+      targetPort: 443

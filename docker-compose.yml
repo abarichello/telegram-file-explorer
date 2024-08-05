@@ -1,0 +1,13 @@
+services:
+  bot:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "443:443"
+    volumes:
+      # Update path
+      - /your/directory:/bot/files
+
+volumes:
+  files:
